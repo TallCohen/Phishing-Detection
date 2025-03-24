@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Phishing Detection</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f0f2f5;
+        color: #333;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+      }
+      .container {
+        background-color: #ffffff;
+        padding: 30px;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        width: 90%;
+        max-width: 600px;
+        text-align: center;
+      }
+      .container h1 {
+        color: #de0909;
+        margin-bottom: 20px;
+      }
+      .container p {
+        font-size: 18px;
+        margin: 10px 0;
+      }
+      .result {
+        font-weight: bold;
+      }
+      .result-danger {
+        color: #de0909;
+      }
+      a {
+        display: inline-block;
+        margin-top: 20px;
+        text-decoration: none;
+        color: #ffffff;
+        background-color: #de0909;
+        padding: 10px 20px;
+        border-radius: 4px;
+        font-size: 16px;
+        transition: background-color 0.3s ease;
+      }
+      a:hover {
+        background-color: #a30808;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Phishing Alert!!!!! ❌</h1>
+      <p>This URL is a Phishing site:</p>
+      <p><strong>{{ url }}</strong></p>
+      <p><u>why?</u></p>
+      <p>Because {{ reason }}</p>
+      <a href="/">Test another URL</a>
+    </div>
+  </body>
+</html>

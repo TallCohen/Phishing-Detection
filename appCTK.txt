@@ -1,0 +1,207 @@
+import re                           # rejex ביטויים רגולריים
+import requests                     # שליחת בקשת HTTP לכתובת האתר שצוינה
+import whois                        # אתר שבודק דומיינים
+import datetime                     # עבודה עם תאריכים ושעות
+import language_tool_python         # בדיקת תחביר וסגנון בשפה האנגלית
+from bs4 import BeautifulSoup       # ספריה לניתוח דפי HTML
+from urllib.parse import urlparse
+import customtkinter as ctk
+
+
+def is_phishing(url):
+    global cause_of_error 
+    cause_of_error = ""
+
+    try:
+        response = requests.get(url)
+        content = response.text
+    except requests.exceptions.RequestException as e:
+        print(f"Error fetching the URL: {e}")
+        return True
+
+    soup = BeautifulSoup(content, 'html.parser')
+    text_content = soup.get_text()
+
+    try:
+        parsed_url = urlparse(url)    # parsed_url: ParseResult(scheme='https', netloc='facebook.com', path='', params='', query='', fragment='')
+        domain_name = parsed_url.netloc   # domain name: terminalx.com
+        
+        if domain_name.startswith('www.'):
+            domain_name = domain_name[4:]  # מוחק את WWW
+        
+        #domain_info = whois.whois(domain_name)
+        #creation_date = domain_info.creation_date
+        if isinstance(creation_date, list):  
+            creation_date = creation_date[0]
+        age = (datetime.datetime.now() - creation_date).days
+    except:
+        age = None
+
+    #print(f"domain before:{domain}")
+    domain = url.replace('https://', '').replace('http://', '').split('/')[0]
+    #print(f"domain after:{domain}")
+
+    print(f"domain name: {domain_name}")
+    #print(f"domain info:{domain_info}")
+    print(f"parsed_url:{parsed_url}")
+    #print(f"creation_date:{creation_date}")
+    print(f"age:{age}")
+    print(f"text context:{text_content}")
+
+
+
+    file_path = 'phishing-links-ACTIVE-today.txt'
+    try:
+        with open(file_path, 'r') as file:
+            url_found = False
+            for line in file:
+                line = line.strip()
+                if url == line:
+                    cause_of_error = "The URL is found in the file."
+                    return True
+    except FileNotFoundError:
+        print(f"The file {file_path} was not found.")
+
+    if "https" not in url:         # בדיקה האם האתר משתמש בתעודת SSL
+        cause_of_error = "The website does not use SSL."
+        return True
+
+
+    if len(url) > 75:               # כתובת ארוכה תהיה לנו חשודה
+        cause_of_error = "The URL is too long."
+        return True
+
+
+    suspicious_chars = ['@', '%', '#']            # שימוש בתווים מיוחדים עשוי להיות חשוד
+    if any(char in url for char in suspicious_chars):  # http://www.google.com@malicious-site.com --> malicious-site.com  @ :נגלוש לאתר אחרי השטרודל
+        print("3")
+        cause_of_error = "The URL contains suspicious characters."
+        return True                                    # http://phishing-site.com#http://www.safe-site.com -->  phishing-site.com # :נגלוש לאתר לפני הסולמית
+
+
+    if re.search(r'\d', domain):  # בדיקה האם יש שימוש במספרים במקום באותיות שיראה חשוד
+        print("4")
+        cause_of_error = "The URL contains numbers."
+        return True
+
+    
+    # suspicious_words = ['verify', 'account', 'update', 'confirm', 'secure']   # אם המילים האלו קיימות בקישור סימן שהאתר כנראה מזויף
+    # if any(word in content.lower() for word in suspicious_words):
+    #     print("5")
+    #     return True
+
+    # suspicious_phrases = ['congratulations', 'won', 'prize', 'winner', 'free', 'gift']   # אם המילים האלו קיימות בקישור סימן שהאתר כנראה מזויף ומנסים להציע פרסים מוגזמים
+    # if any(phrase in content.lower() for phrase in suspicious_phrases):
+    #     print("6")
+    #     return True
+
+
+    #    7  ???? 
+
+    # print(domain_info)
+    # if domain_info['age'] < 30:  # הדומיין נוצר לפני פחות מ30 ימים - אם יחסית חדש נבין שמשהו חשוד
+    #     print("8")
+    #     return True
+
+
+    if not all(ord(char) < 128 for char in url):     # בדיקת תווי אסקי
+        print("9")
+        cause_of_error = "The URL contains non-ASCII characters."
+        return True
+    
+    # tool = language_tool_python.LanguageTool('en-US')
+    # matches = tool.check(text_content)
+    # if len(matches) > 0:
+    #     print("10")
+    #     return True
+    
+
+    ip_pattern = re.compile(r'^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$')
+    if ip_pattern.match(domain_name):
+        print("11")
+        cause_of_error = "The URL contains an IP address."
+        return True
+
+    return False
+
+
+def submit_url(entry, root):
+
+    url = entry.get()
+    if url:
+        result = is_phishing(url)
+        root.destroy()  # סוגר את החלון שהכנסנו את הקישור בו
+
+        if result:
+            warning_window = ctk.CTkToplevel()
+            warning_window.geometry("600x300")
+            warning_window.title("Phishing Warning")
+
+            frame = ctk.CTkFrame(warning_window) 
+            frame.pack(pady=10, padx=10, fill="both", expand=True)
+            
+            label = ctk.CTkLabel(frame, text=url, font=("Arial", 18), fg_color="#de0909", text_color="#FFFFFF")  
+            label.pack(pady=30, padx=10)
+
+            label = ctk.CTkLabel(frame, text=f"WARNING !!!! \n \n This site is probably a phishing site! \n \n The cause of the warning is: {cause_of_error}", font=("Arial", 18), text_color="#FFFFFF") 
+            label.pack(pady=10, padx=10)
+            
+            # button = ctk.CTkButton(info_window, text="OK", command=info_window.destroy) 
+            # button.pack(pady=10)
+        
+           #info_window.mainloop()  
+        else:
+            info_window = ctk.CTkToplevel()
+            info_window.geometry("400x200")
+            info_window.title("Secure Site")
+
+            frame = ctk.CTkFrame(info_window) 
+            frame.pack(pady=10, padx=10, fill="both", expand=True)
+            
+            label = ctk.CTkLabel(frame, text=url, font=("Arial", 18), fg_color="#2fa333", text_color="#FFFFFF") 
+            label.pack(pady=30, padx=10)  # מרחב מהפריים עד הטקסט
+
+            label = ctk.CTkLabel(frame, text="Don't worry, \n This site is secure. ", font=("Arial", 18), text_color="#FFFFFF")  
+            label.pack(pady=10, padx=10)
+            
+            # button = ctk.CTkButton(info_window, text="OK", command=info_window.destroy) 
+            # button.pack(pady=10)
+        
+            #info_window.mainloop() 
+
+        ctk._default_root.quit() 
+        root.destroy()  # 2סוגר את החלון שהכנסנו את הקישור בו
+
+
+def main():
+    ctk.set_appearance_mode("Dark")  # Modes: "System" , "Dark", "Light"
+
+    root = ctk.CTk()  
+    root.geometry("500x300")
+    root.title("Phishing Detection")
+
+    frame = ctk.CTkFrame(root)
+    frame.pack(pady=40, padx=40, fill="both", expand=True)  # pad(y) pad(y)  ריבוע מסביב למסגרת ציר איקס ציר וי הכוונה לרוחב ולאופק |  padx 
+
+    label = ctk.CTkLabel(frame, text="Please enter a URL to test:", font=("Arial", 22), text_color="#ffffff")  #fg_color="#ffb6c1" צבע רקע לטקסט
+    label.pack(pady=10)
+
+    entry = ctk.CTkEntry(frame, width=300, fg_color="#ffffff", text_color="#000000")
+    entry.pack(pady=20)
+
+    submit_button = ctk.CTkButton(frame, text="Submit", command=lambda: submit_url(entry, root), fg_color="#ff1493", hover_color="#ff69b4", text_color="#ffffff")
+    submit_button.pack(pady=10)
+
+    root.mainloop()
+    # root.destroy()  # סוגר את החלון שהכנסנו את הקישור בו
+
+if __name__ == "__main__":
+    main()
+
+
+# url = input("enter a link for test: ")
+
+# if is_phishing(url):
+#     print("Warning!!!! this site is probably a phishing site")
+# else:
+#     print("this site is secure. don't worry")

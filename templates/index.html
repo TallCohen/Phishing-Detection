@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Phishing Detection</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f0f2f5;
+        color: #000000;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+      }
+      .container {
+        background: #ffffff;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        width: 100%;
+        max-width: 500px;
+        text-align: center;
+      }
+      h1 {
+        color: #eb5fbe;
+        margin-bottom: 20px;
+      }
+      label {
+        display: block;
+        margin-bottom: 10px;
+        font-weight: bold;
+      }
+      input[type="text"] {
+        width: calc(100% - 22px);
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 16px;
+        margin-bottom: 20px;
+        transition: border-color 0.3s ease;
+      }
+      input[type="text"]:focus {
+        border-color: #eb5fbe;
+        outline: none;
+      }
+      button {
+        background-color: #eb5fbe;
+        color: #ffffff;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 4px;
+        font-size: 16px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+      }
+      button:hover {
+        background-color: #c40688;
+      }
+      .loading {
+        display: none;
+        margin-top: 20px;
+        font-size: 18px;
+        color: #eb5fbe;
+      }
+      .loading .spinner {
+        border: 4px solid #f3f3f3;
+        border-radius: 50%;
+        border-top: 4px solid #eb5fbe;
+        width: 30px;
+        height: 30px;
+        animation: spin 1s linear infinite;
+        margin: 0 auto;
+      }
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Phishing Detection Tool</h1>
+      <form method="POST" id="url-form">
+        <label for="url">Enter URL to test:</label>
+        <input type="text" id="url" name="url" required />
+        <button type="submit">Submit</button>
+      </form>
+      <div class="loading" id="loading">
+        <p>Checking URL...</p>
+        <div class="spinner"></div>
+      </div>
+    </div>
+
+    <script>
+      const form = document.getElementById("url-form");
+      const loading = document.getElementById("loading");
+
+      form.addEventListener("submit", () => {
+        loading.style.display = "block";
+      });
+    </script>
+  </body>
+</html>
