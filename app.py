@@ -1,4 +1,5 @@
 from flask import Flask, render_template, request
+import os
 import re  # שימוש עם ביטויים רגולרים כדי שנוכל לבדוק את הדומיין
 import requests  # שולח בקשות לאתר שאנחנו רוצים לאתר ונותן לנו את התוכן שלו כדי שנוכל לנתח אותו
 import whois   # מידע על מתי האתר נוצר וכו
@@ -144,4 +145,4 @@ def index():
     return render_template('index.html')
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
