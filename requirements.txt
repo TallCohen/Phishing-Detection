@@ -1,3 +1,4 @@
 requests
 Flask
 python-whois
+beautifulsoup4
